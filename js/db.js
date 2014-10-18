@@ -5,7 +5,7 @@ app.factory("db", ["$http", function($http) {
 	var _urlEnd = "?apiKey=" + settings.mongoApiKey;
 
 	var urls = {
-		numLoaded: _urlStart + "collections/numLoaded" + _urlEnd
+		numLoaded: _urlStart + "collections/numLoaded/5442ec5de4b00975f8618845" + _urlEnd
 	};
 
 	function _load(url, data, type, success, error) {
@@ -14,7 +14,7 @@ app.factory("db", ["$http", function($http) {
 
 	var module = {};
 	module.incNumLoaded = function(callback) {
-		$http.post(urls.numLoaded, {
+		$http.put(urls.numLoaded, {
 			$inc: { x: 1 }
 		}).success(function(response) {
 			console.log("Response incNumLoaded: ");
@@ -27,7 +27,7 @@ app.factory("db", ["$http", function($http) {
 		.success(function(response) {
 			console.log("Response loadNumLoaded: ");
 			console.log(response);
-			callback(response[0].x);
+			callback(response);
 		});
 	};
 
