@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+		<script src="js/settings.js"></script>
 	</head>
-	<body>
-		Hello world! v2
+	<body ng-app="app" ng-controller="main">
+		<p>Number of times accessed: {{numLoaded}}</p>
 	</body>
+	<script src="js/app.js"></script>
+	<script src="js/main.js"></script>
+	<script src="js/db.js"></script>	
 </html>
