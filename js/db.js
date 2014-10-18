@@ -15,7 +15,7 @@ app.factory("db", ["$http", function($http) {
 	var module = {};
 	module.incNumLoaded = function(callback) {
 		$http.put(urls.numLoaded, {
-			x: 1//"$inc": {"x": 1} 
+			"$inc": {"x": 1} 
 		}).success(function(response) {
 			console.log("Response incNumLoaded: ");
 			console.log(response);
