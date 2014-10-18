@@ -17,7 +17,7 @@ app.factory("db", ["$http", function($http) {
 		$http.post(urls.numLoaded, {
 			$inc: { x: 1 }
 		}).success(function(response) {
-			console.log("Response: ");
+			console.log("Response incNumLoaded: ");
 			console.log(response);
 			callback(response);
 		});
@@ -25,6 +25,8 @@ app.factory("db", ["$http", function($http) {
 	module.loadNumLoaded = function(callback) {
 		$http.get(urls.numLoaded)
 		.success(function(response) {
+			console.log("Response loadNumLoaded: ");
+			console.log(response);
 			callback(response[0].x);
 		});
 	};
