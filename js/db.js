@@ -19,6 +19,7 @@ app.factory("db", ["$http", function($http) {
 		}).success(function(response) {
 			console.log("Response: ");
 			console.log(response);
+			callback(response);
 		});
 	};
 	module.loadNumLoaded = function(callback) {
