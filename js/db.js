@@ -13,13 +13,12 @@ app.factory("db", ["$http", function($http) {
 	}
 
 	var module = {};
-	module.incNumLoaded = function(callback) {
+	module.incNumLoaded = function(number) {
 		$http.put(urls.numLoaded, {
-			"$inc": {"x": 1} 
+			"x": number
 		}).success(function(response) {
 			console.log("Response incNumLoaded: ");
 			console.log(response);
-			callback(response);
 		});
 	};
 	module.loadNumLoaded = function(callback) {
@@ -27,7 +26,12 @@ app.factory("db", ["$http", function($http) {
 		.success(function(response) {
 			console.log("Response loadNumLoaded: ");
 			console.log(response);
-			callback(response);
+			var result = response.x;
+			if (result === undefined) {
+				result = 0;
+			}
+			callback(result);
+			incNumLoaded(result+1);
 		});
 	};
 
