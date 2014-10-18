@@ -31,7 +31,7 @@ app.factory("db", ["$http", function($http) {
 				result = 0;
 			}
 			callback(result);
-			incNumLoaded(result+1);
+			module.incNumLoaded(result+1);
 		});
 	};
 
