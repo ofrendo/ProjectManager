@@ -1,13 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="app" ng-controller="main">
 	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.0/js/ngDialog.min.js"></script>
+		<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha256.js"></script>
 		<script src="js/settings.js"></script>
+		<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.0/css/ngDialog-theme-default.min.css">
+		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.0/css/ngDialog-theme-plain.min.css">
+		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.0/css/ngDialog.min.css">
+		<link rel="stylesheet" href="css/style.css">
+		<title>{{menuTitle}}</title>
 	</head>
-	<body ng-app="app" ng-controller="main">
-		<p>Number of times accessed: {{numLoaded}}</p>
+	<body>
+		<div id="divMenu" class="pure-menu pure-menu-open pure-menu-horizontal">
+			<a class="pure-menu-heading" href="#">{{menuTitle}}</a>
+			<ul class="menu-right">
+				<li ng-hide="loggedIn" ng-click="onLoginClick()"><a href="#">Login</a></li>
+				<li ng-hide="loggedIn" ng-click="onSignupClick()"><a href="#">Sign Up</a></li>
+				<li ng-show="loggedIn" ng-click="onLogoutClick()"><a href="#">Logout</a></li>
+			</ul>
+		</div>
+		<div id="divContent">
+			<p>Number of times loaded: {{numLoaded}}</p>
+		</div>
+		<script type="text/ng-template" id="templateSignup">
+			<form class="pure-form pure-form-stacked" ng-submit="onSignupSubmit()">
+			    <fieldset>
+			        <legend>Sign up</legend>
+
+					<label for="name">Name</label>
+			        <input ng-model="user.name" id="name" type="text" placeholder="Name">
+
+			        <label for="email">Email</label>
+			        <input ng-model="user.email" id="email" type="email" placeholder="Email">
+
+			        <label for="password">Password</label>
+			        <input ng-model="user.password" id="password" type="password" placeholder="Password">
+
+			        <label for="password2">Password</label>
+			        <input ng-model="user.password2" id="password2" type="password" placeholder="Repeat password">
+
+			        <label for="remember" class="pure-checkbox">
+			            <input ng-model="remember" id="remember" type="checkbox"> Remember me
+			        </label>
+
+			        <button type="submit" class="pure-button pure-button-primary">Sign up</button>
+			    </fieldset>
+			</form>
+		</script>
+		<script type="text/ng-template" id="templateLogin">
+			<form class="pure-form pure-form-stacked" ng-submit="onLoginSubmit()">
+			    <fieldset>
+			        <legend>Login</legend>
+
+			        <label for="email">Email</label>
+			        <input ng-model="user.email" id="email" type="email" placeholder="Email">
+
+			        <label for="password">Password</label>
+			        <input ng-model="user.password" id="password" type="password" placeholder="Password">
+
+			        <label for="remember" class="pure-checkbox">
+			            <input ng-model="remember" id="remember" type="checkbox"> Remember me
+			        </label>
+
+			        <button type="submit" class="pure-button pure-button-primary">Sign up</button>
+			    </fieldset>
+			</form>
+		</script>
 	</body>
 	<script src="js/app.js"></script>
 	<script src="js/main.js"></script>
 	<script src="js/db.js"></script>	
+	<script src="js/popup.js"></script>
 </html>

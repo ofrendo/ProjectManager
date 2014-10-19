@@ -1,0 +1,15 @@
+.menu-right {
+	float: right;
+}
+
+
+#divContent {
+	clear: both;
+}
+
+
+
+/* Overwrite popup css */
+.ngdialog.ngdialog-theme-default {
+	padding-top: 20px;
+}

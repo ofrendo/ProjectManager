@@ -5,6 +5,8 @@ ProjectManager is a personal project management tool, in essence a glorified Tod
 <ul>
 	<li>Add projects</li>
 	<li>Add items to a project</li>
+	<li>Nest items</li>
+	<li>Projects are root level items and recieve special treatment, but otherwise same</li>
 	<li>Order chronologically</li>
 	<li>Order by priority</li>
 	<li>Filters (show/hide items)</li>
