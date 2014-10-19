@@ -11,5 +11,5 @@ ProjectManager is a personal project management tool, in essence a glorified Tod
 	<li>Easy to add/change/delete objects</li>
 	<li>Use MongoDB for backend, Angular.js for frontend</li>
 	<li>Item can be done, not done, or on the back burner</li>
-	<li>On the back burner can have reasons, have list of those<li>
+	<li>On the back burner can have reasons, have list of those</li>
 </ul>
