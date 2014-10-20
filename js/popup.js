@@ -25,4 +25,27 @@ app.controller("popup", ["$scope", "ngDialog", function($scope, ngDialog) {
 	function _validateSubmit() {
 		return true;
 	}
+
+	//$scope.projects = $scope.$parent.projects
+	$scope.project = { name: "ProjectName" };
+	$scope.onProjectSubmit = function() {
+		$scope.$parent.submitProject($scope.project);
+		ngDialog.close();
+	};
+
+	$scope.item = { 
+		projectID: (!!$scope.$parent.selectedProject) 
+							? $scope.$parent.selectedProject._id.$oid
+							: null,
+		parentItemID: (!!$scope.$parent.selectedItem) 
+							? $scope.$parent.selectedItem._id.$oid
+							: "root",
+		description: "Description for item"
+	};
+	$scope.onCreateItemSubmit = function(){
+		$scope.$parent.submitCreateItem($scope.selectedProject, $scope.item);
+		ngDialog.close();
+	};
+
+
 }]);

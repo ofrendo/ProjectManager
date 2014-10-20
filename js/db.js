@@ -7,6 +7,7 @@ app.factory("db", ["$http", function($http) {
 	var urls = {
 		numLoaded: _urlStart + "collections/numLoaded/1" + _urlEnd,
 		users: _urlStart + "collections/users" + _urlEnd,
+		projects: _urlStart + "collections/projects" + _urlEnd,
 		runCommand: _urlStart + "runCommand" + _urlEnd
 	};
 
@@ -58,7 +59,38 @@ app.factory("db", ["$http", function($http) {
 			callback(response);
 		});
 	};
-
+	module.createProject = function(project, callback) {
+		console.log(project);
+		$http.post(urls.projects, project)
+		.success(function(response) {
+			console.log("Response createProject:");
+			console.log(response);
+			callback(response);
+		});
+	};
+	module.createItem = function(item, callback) {
+		console.log("Creating item:");
+		console.log(item);
+		$http.post(urls.projects, item)
+		.success(function(response) {
+			console.log("Response createItem:");
+			console.log(response);
+			callback(response);
+		});
+	};
+	module.loadProjects = function(user, callback) {
+		var query = {
+			"userID:": user._id.$oid
+		};
+		var url = urls.projects + "&q=" + JSON.stringify(query);
+		console.log("loadProjects: " + url);
+		$http.get(urls.projects)
+		.success(function(response) {
+			console.log("Response loadProjects:");
+			console.log(response);
+			callback(response);
+		});
+	};
 
 	return module;
 }]);

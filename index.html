@@ -5,6 +5,7 @@
 		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
 		<script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
 		<script src="//cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.0/js/ngDialog.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular-route.min.js"></script>
 		<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha256.js"></script>
 		<script src="js/settings.js"></script>
 		<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
@@ -17,15 +18,40 @@
 	<body>
 		<div id="divMenu" class="pure-menu pure-menu-open pure-menu-horizontal">
 			<a class="pure-menu-heading" href="#">{{menuTitle}}</a>
+			<ul>
+				<li ng-show="loggedIn" ng-click="onCreateProjectClick()"><a href="#">Create project</a></li>
+			</ul>
 			<ul class="menu-right">
 				<li ng-hide="loggedIn" ng-click="onLoginClick()"><a href="#">Login</a></li>
 				<li ng-hide="loggedIn" ng-click="onSignupClick()"><a href="#">Sign Up</a></li>
 				<li ng-show="loggedIn" ng-click="onLogoutClick()"><a href="#">Logout</a></li>
 			</ul>
 		</div>
-		<div id="divContent">
+		<div id="divContent" class="pure-u-11-12">
+			
+			<div ng-repeat="project in projects">
+				<button class="pure-button" ng-click="onCreateItemClick(project)">Create item for {{project._id.$oid}}</button>
+				<ul>
+					<li ng-repeat="item in project.items" 
+						ng-include="'templateProjectItem'">
+					</li>
+				</ul>
+				<br>
+			</div>
+
+
 			<p>Number of times loaded: {{numLoaded}}</p>
 		</div>
+		<script type="text/ng-template" id="templateProjectItem">
+			<a href="#" ng-click="onCreateItemClick(project, item)">
+				{{item.description}}
+			</a>
+			<ul ng-if="item.items">
+				<li ng-repeat="item in item.items" 
+					ng-include="'templateProjectItem'">
+				</li>
+			</ul>
+		</script>
 		<script type="text/ng-template" id="templateSignup">
 			<form class="pure-form pure-form-stacked" ng-submit="onSignupSubmit()">
 			    <fieldset>
@@ -66,7 +92,49 @@
 			            <input ng-model="remember" id="remember" type="checkbox"> Remember me
 			        </label>
 
-			        <button type="submit" class="pure-button pure-button-primary">Sign up</button>
+			        <button type="submit" class="pure-button pure-button-primary">Login</button>
+			    </fieldset>
+			</form>
+		</script>
+		<script type="text/ng-template" id="templateProject">
+			<form class="pure-form pure-form-stacked" ng-submit="onProjectSubmit()">
+			    <fieldset>
+			        <legend>Create project</legend>
+
+			        <label for="name">Name</label>
+			        <input ng-model="project.name" id="name" type="text" placeholder="Name">
+
+					<label for="priority">Priority</label>
+			        <input class="pure-input-1-4" ng-init="project.priority=1" ng-model="project.priority" id="priority" type="number" placeholder="Priority">
+
+			        <label for="category">Category</label>
+			        <select ng-init="project.category='Work'" ng-model="project.category" id="category">
+			        	<option>Work</option>
+			        	<option>Private</option>
+			        </select>
+
+			        <button type="submit" class="pure-button pure-button-primary">Create</button>
+			    </fieldset>
+			</form>
+		</script>
+		<script type="text/ng-template" id="templateItem">
+			<form class="pure-form pure-form-stacked" ng-submit="onCreateItemSubmit()">
+			    <fieldset>
+			        <legend>Create item</legend>
+
+			        <!-- <label for="project">Project</label>
+			        <select ng-model="project.name" id="project">
+			        	<option ng-repeat="project in $parent.projects">{{project.name}}</option>
+			        </select> -->
+
+			        <label for="description">Description</label>
+			        <textarea class="pure-input-1" rows="2" ng-model="item.description" id="description" type="text" placeholder="Description">
+			        </textarea>
+
+					<label for="priority">Priority</label>
+			        <input class="pure-input-1-4" ng-init="item.priority=1" ng-model="item.priority" id="priority" type="number" placeholder="Priority">
+
+			        <button type="submit" class="pure-button pure-button-primary">Create</button>
 			    </fieldset>
 			</form>
 		</script>

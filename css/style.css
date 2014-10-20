@@ -5,6 +5,8 @@
 
 #divContent {
 	clear: both;
+	margin: 0 auto;
+	display: block;
 }
 
 
@@ -12,4 +14,9 @@
 /* Overwrite popup css */
 .ngdialog.ngdialog-theme-default {
 	padding-top: 20px;
+}
+
+
+textarea {
+	resize: none;
 }
