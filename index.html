@@ -30,10 +30,11 @@
 		<div id="divContent" class="pure-u-11-12">
 			
 			<div ng-repeat="project in projects">
-				<button class="pure-button" ng-click="onCreateItemClick(project)">Create item for {{project._id.$oid}}</button>
+				<button class="pure-button" ng-click="onCreateItemChildClick(project)">Create item for {{project._id.$oid}}</button>
 				<ul>
 					<li ng-repeat="item in project.items" 
-						ng-include="'templateProjectItem'">
+						ng-include="'templateProjectItem'" 
+						ng-init="parentItems = project.items; parentItem = project">
 					</li>
 				</ul>
 				<br>
@@ -46,9 +47,13 @@
 			<a href="#" ng-click="onCreateItemClick(project, item)">
 				{{item.description}}
 			</a>
-			<ul ng-if="item.items">
+			<button ng-click="onCreateItemSiblingClick(project, item, parentItems[$index+1], parentItems)">Create next sibling</button>
+			<button ng-click="onCreateItemSiblingClick(project, parentItems[$index-1], item, parentItems)">Create previous sibling</button>
+			<button ng-click="onCreateItemChildClick(project, item)">Create child</button>
+			<ul ng-init="parentItem = item">
 				<li ng-repeat="item in item.items" 
-					ng-include="'templateProjectItem'">
+					ng-include="'templateProjectItem'" 
+					ng-init="parentItems = parentItem.items">
 				</li>
 			</ul>
 		</script>

@@ -78,6 +78,19 @@ app.factory("db", ["$http", function($http) {
 			callback(response);
 		});
 	};
+	module.updateItemNextItemID = function(toBeUpdatedItem, nextItemID, callback) {
+		var cloneItem = JSON.parse(JSON.stringify(toBeUpdatedItem));
+		cloneItem.nextItemID = nextItemID;
+		delete cloneItem["items"];
+		delete cloneItem["_id"];
+		var url = _urlStart + "collections/projects/" + toBeUpdatedItem._id.$oid + _urlEnd;
+		$http.put(url, cloneItem)
+		.success(function(response) {
+			console.log("Response updateItemNextItemID:");
+			console.log(response),
+			callback(response);
+		});
+	};
 	module.loadProjects = function(user, callback) {
 		var query = {
 			"userID:": user._id.$oid

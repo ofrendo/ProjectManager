@@ -26,6 +26,7 @@ app.controller("popup", ["$scope", "ngDialog", function($scope, ngDialog) {
 		return true;
 	}
 
+
 	//$scope.projects = $scope.$parent.projects
 	$scope.project = { name: "ProjectName" };
 	$scope.onProjectSubmit = function() {
@@ -33,17 +34,29 @@ app.controller("popup", ["$scope", "ngDialog", function($scope, ngDialog) {
 		ngDialog.close();
 	};
 
-	$scope.item = { 
-		projectID: (!!$scope.$parent.selectedProject) 
-							? $scope.$parent.selectedProject._id.$oid
-							: null,
-		parentItemID: (!!$scope.$parent.selectedItem) 
-							? $scope.$parent.selectedItem._id.$oid
-							: "root",
-		description: "Description for item"
-	};
-	$scope.onCreateItemSubmit = function(){
-		$scope.$parent.submitCreateItem($scope.selectedProject, $scope.item);
+
+	if ($scope.$parent.selectedProject) {
+		//Item creation
+		$scope.item = {
+			description: "Description for item"
+		};
+
+		if ($scope.$parent.createChild === true) { //($scope.$parent.selectedPreviousItem || $scope.$parent.selectedNextItem) {
+			//Item child creation
+			$scope.item.parentItemID = ($scope.$parent.selectedParentItem) ? $scope.$parent.selectedParentItem._id.$oid : "root";
+			$scope.item.nextItemID = null;
+		}
+		else {
+			//Item sibling creation
+			var validItem = $scope.$parent.selectedPreviousItem || $scope.$parent.selectedNextItem;
+			$scope.item.parentItemID = validItem.parentItemID;
+			$scope.item.nextItemID = ($scope.$parent.selectedNextItem) ? $scope.$parent.selectedNextItem._id.$oid : null;			
+		}
+		
+	}
+
+	$scope.onCreateItemSubmit = function() {
+		$scope.$parent.submitCreateItem($scope.selectedProject, $scope.item, $scope.$parent.selectedPreviousItem);
 		ngDialog.close();
 	};
 

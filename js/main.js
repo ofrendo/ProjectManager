@@ -64,8 +64,49 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 				}
 			}
 
+			for (var i = 0; i < $scope.projects.length; i++) {
+				orderItems($scope.projects[i]);
+			}
+
 		});
 	};
+
+	function orderItems(parentItem) {
+		if (parentItem.items.length === 0) {
+			return;
+		}
+
+		//Find last item
+		var lastItem;
+		for (var i = 0; i < parentItem.items.length; i++) {
+			if (parentItem.items[i].nextItemID == null) {
+				lastItem = parentItem.items[i];
+				break;
+			}
+		}
+		//Order them according to nextItemID
+		var orderedItems = [ lastItem ];
+		var maxDone = 1000;
+		//console.log(parentItem.items);
+		while (orderedItems.length !== parentItem.items.length) {  //&& maxDone = true
+ 			for (var i = 0; i < parentItem.items.length; i++) {
+				//console.log("This loop:");
+				//console.log("nextItemID:" + parentItem.items[i].nextItemID + " ; inloop: " + orderedItems[0]._id.$oid);
+				if (parentItem.items[i].nextItemID == orderedItems[0]._id.$oid) {
+					orderedItems.splice(0, 0, parentItem.items[i]);
+				}
+			}
+			maxDone--;
+		}
+		parentItem.items = orderedItems;
+		
+
+		for (var i = 0; i < orderedItems.length; i++) {
+			orderItems(orderedItems[i]);
+		}
+
+	}
+
 	$scope.onLogoutClick = function() {
 		$scope.user = {};		
 		$scope.menuTitle = _menuTitle;
@@ -79,15 +120,50 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 			scope: $scope
 		});
 	};
-	$scope.onCreateItemClick = function(project, item) {
+	$scope.onCreateItemSiblingClick = function(project, previousItem, nextItem, parentItems) {
+		resetItems();
+		//previousItem is previous sibling, can be undefined, first item in array in that case
+		//nextItem is used if item is being inserted between two items, can be undefined, last item in array in that case
 		$scope.selectedProject = project;
-		$scope.selectedItem = item;
+		$scope.selectedPreviousItem = previousItem;
+		$scope.selectedNextItem = nextItem;
+		console.log(previousItem);
+		console.log(nextItem);
 		ngDialog.open({
 			template: "templateItem",
 			controller: "popup",
 			scope: $scope
 		});
 	};
+	$scope.onCreateItemChildClick = function(project, parentItem) {
+		resetItems();
+		//Parent item is one level above, can be undefined, root level in that case
+		$scope.createChild = true;
+		$scope.selectedProject = project;
+		$scope.selectedParentItem = parentItem;
+		if (parentItem) {
+			if (parentItem.items.length > 0) {
+			//If parent item already has children, the last child needs to be updated
+				$scope.selectedPreviousItem = parentItem.items[ parentItem.items.length-1 ];
+			}
+		}
+		else if ( project.items.length > 0) {
+			$scope.selectedPreviousItem = project.items[ project.items.length-1 ];
+		}
+		ngDialog.open({
+			template: "templateItem",
+			controller: "popup",
+			scope: $scope
+		});
+	}
+
+	function resetItems() {
+		delete $scope["selectedPreviousItem"];
+		delete $scope["selectedNextItem"];
+		delete $scope["selectedParentItem"];
+		delete $scope["createChild"];
+	}
+	
 
 	//Sending methods
 	$scope.submitSignup = function(user) {
@@ -108,16 +184,25 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 	$scope.submitProject = function(project) {
 		$scope.prepareItem(project, "root");
 		db.createProject(project, function(response) {
+			response.items = [];
 			$scope.projects.push(response);
 			console.log($scope.projects);
 		});
 	};
-	$scope.submitCreateItem = function(project, item) {
+	$scope.submitCreateItem = function(project, item, itemToBeUpdated) {
 		$scope.prepareItem(item, project._id.$oid);
 		db.createItem(item, function(response) {
+			response.items = [];
 			addItemToProject(project, response);
+
+			if (itemToBeUpdated) {
+				db.updateItemNextItemID(itemToBeUpdated, response._id.$oid, function(updatedItemResponse) {
+					itemToBeUpdated.nextItemID = response._id.$oid;	
+				});
+			}
+
 		});
-	}
+	};
 
 	//Utility methods
 	$scope.prepareUserData = function(user) {
@@ -148,16 +233,35 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 		$scope.submitLogin($scope.user);
 	}
 
-	//add item to project recursively
+	//add item to project recursively, CAN ONLY BE USED AFTER PROJECT ALREADY LOADED
 	function addItemToProject(parentItem, item) {
+		if (!parentItem.items) {
+				parentItem.items = [];
+		}	
+
 		if (parentItem._id.$oid == item.parentItemID || item.parentItemID == "root") {
-			if (!parentItem.items) parentItem.items = [];
-			parentItem.items.push(item);
-			return;
+			//Correct parentItem, now need to insert it at right position
+			if (item.nextItemID == null) {
+				//Insert it at end of array
+				parentItem.items.push(item);
+				return;
+			}
+
+			for (var i = 0; i < parentItem.items.length; i++) {
+				//Insert it at specific position
+				if (parentItem.items[i]._id.$oid == item.nextItemID) {
+					//Insert it before this item
+					parentItem.items.splice(i, 0, item);
+					return;
+				}
+			}
+			
+
 		}
 
 		for (var i = 0; i < parentItem.items.length; i++) {
 			addItemToProject(parentItem.items[i], item);
 		}
 	}
+
 }]);
