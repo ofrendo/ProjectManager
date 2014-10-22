@@ -6,8 +6,50 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
     $scope.user = {};
     $scope.projects = [];
 
+    $scope.sortableOptions = {
+    	update: function(e, ui) {
+    		var originalItems = ui.item.sortable.droptargetModel;
+    		var originalIndex = ui.item.sortable.index;
+    		var newIndex = ui.item.sortable.dropindex;
+
+    		//Items that need to be updated:
+    		//The originalPreviousItem
+    		//The newPreviousItem
+    		var originalPreviousItem = originalItems[ originalIndex-1 ];
+    		var draggedItem = originalItems[ originalIndex ];
+    		var newPreviousItem = (newIndex > originalIndex) ? originalItems[ newIndex ] : originalItems[ newIndex-1 ];
+    		var newNextItem = (newIndex != originalItems.length-1) ? originalItems[ newIndex ] : null;
+
+    		if (originalPreviousItem) {
+    			//Need to find the new nextItemID for this item
+    			var localNewNextItem = originalItems[ originalItems+1 ];
+    			var newNextItemID = (localNewNextItem) ? localNewNextItem._id.$oid : null;
+
+    			db.updateItemNextItemID(originalPreviousItem, newNextItemID, function() {
+    				originalPreviousItem.nextItemID = newNextItemID;
+    			});
+    		}
+
+    		if (newPreviousItem) {
+    			//New next item for this will be the item being dragged
+    			db.updateItemNextItemID(newPreviousItem, draggedItem._id.$oid, function() {
+    				newPreviousItem.nextItemID = draggedItem._id.$oid;
+    			})
+    		}
+
+    		//Finally update the item itself
+    		var newNextItemID = (newNextItem) ? newNextItem._id.$oid : null;
+    		db.updateItemNextItemID(draggedItem, newNextItemID, function() {
+    			draggedItem.nextItemID = newNextItemID;
+			});	
+
+    	},
+    	index: 0
+    };
+
 	//Event functions
 	$scope.onSignupClick = function() {
+		resetItems();
 		ngDialog.open({ 
 			template: "templateSignup",
 			controller: "popup",
@@ -15,6 +57,7 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 		});
 	};
 	$scope.onLoginClick = function() {
+		resetItems();
 		ngDialog.open({
 			template: "templateLogin",
 			controller: "popup",
@@ -114,6 +157,7 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 		$scope.projects = [];
 	};
 	$scope.onCreateProjectClick = function() {
+		resetItems();
 		ngDialog.open({
 			template: "templateProject",
 			controller: "popup",
@@ -158,6 +202,7 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 	}
 
 	function resetItems() {
+		delete $scope["selectedProject"];
 		delete $scope["selectedPreviousItem"];
 		delete $scope["selectedNextItem"];
 		delete $scope["selectedParentItem"];

@@ -1,4 +1,4 @@
-var app = angular.module("app", ["ngDialog"]);
+var app = angular.module("app", ["ngDialog", "ui.sortable"]);
 
 app.config(['ngDialogProvider', function (ngDialogProvider) {
     ngDialogProvider.setDefaults({

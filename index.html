@@ -2,10 +2,10 @@
 <html ng-app="app" ng-controller="main">
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
-		<script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
+		<script src="http://cdn.jsdelivr.net/g/jquery@1,jquery.ui@1.10%28jquery.ui.core.min.js+jquery.ui.widget.min.js+jquery.ui.mouse.min.js+jquery.ui.sortable.min.js%29,angularjs@1.2,angular.ui-sortable"></script>
 		<script src="//cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.0/js/ngDialog.min.js"></script>
 		<script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular-route.min.js"></script>
+		<script src="//cdn.jsdelivr.net/angular.dragdrop/1.07/angular-dragdrop.min.js"></script>
 		<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha256.js"></script>
 		<script src="js/settings.js"></script>
 		<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
@@ -31,7 +31,7 @@
 			
 			<div ng-repeat="project in projects">
 				<button class="pure-button" ng-click="onCreateItemChildClick(project)">Create item for {{project._id.$oid}}</button>
-				<ul>
+				<ul ui-sortable="sortableOptions" ng-model="project.items">
 					<li ng-repeat="item in project.items" 
 						ng-include="'templateProjectItem'" 
 						ng-init="parentItems = project.items; parentItem = project">
@@ -44,13 +44,13 @@
 			<p>Number of times loaded: {{numLoaded}}</p>
 		</div>
 		<script type="text/ng-template" id="templateProjectItem">
-			<a href="#" ng-click="onCreateItemClick(project, item)">
+			<span ng-click="onCreateItemClick(project, item)">
 				{{item.description}}
-			</a>
+			</span>
 			<button ng-click="onCreateItemSiblingClick(project, item, parentItems[$index+1], parentItems)">Create next sibling</button>
 			<button ng-click="onCreateItemSiblingClick(project, parentItems[$index-1], item, parentItems)">Create previous sibling</button>
 			<button ng-click="onCreateItemChildClick(project, item)">Create child</button>
-			<ul ng-init="parentItem = item">
+			<ul ng-model="parentItem.items" ng-init="parentItem = item" ui-sortable="sortableOptions">
 				<li ng-repeat="item in item.items" 
 					ng-include="'templateProjectItem'" 
 					ng-init="parentItems = parentItem.items">
@@ -127,13 +127,8 @@
 			    <fieldset>
 			        <legend>Create item</legend>
 
-			        <!-- <label for="project">Project</label>
-			        <select ng-model="project.name" id="project">
-			        	<option ng-repeat="project in $parent.projects">{{project.name}}</option>
-			        </select> -->
-
 			        <label for="description">Description</label>
-			        <textarea class="pure-input-1" rows="2" ng-model="item.description" id="description" type="text" placeholder="Description">
+			        <textarea class="pure-input-1" rows="2" ng-model="item.description" id="description" type="text" placeholder="Description" autofocus>
 			        </textarea>
 
 					<label for="priority">Priority</label>
