@@ -30,6 +30,8 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
     	createChild: "Create child",
     	delete: "Delete"
     };
+    $scope.getStatusStyle(status) {
+    };
 
     $scope.sortableOptions = {
     	update: function(e, ui) {
