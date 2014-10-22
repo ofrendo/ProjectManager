@@ -79,18 +79,48 @@ app.factory("db", ["$http", function($http) {
 		});
 	};
 	module.updateItemNextItemID = function(toBeUpdatedItem, nextItemID, callback) {
-		var cloneItem = JSON.parse(JSON.stringify(toBeUpdatedItem));
+		var cloneItem = buildCloneItem(toBeUpdatedItem);
 		cloneItem.nextItemID = nextItemID;
-		delete cloneItem["items"];
-		delete cloneItem["_id"];
-		var url = _urlStart + "collections/projects/" + toBeUpdatedItem._id.$oid + _urlEnd;
+		var url = buildItemURL(toBeUpdatedItem); 
+		module.updateItem(url, cloneItem, callback);
+	};
+	module.updateItemDetails = function(toBeUpdatedItem, newDescription, newPriority, newStatus, callback) {
+		var cloneItem = buildCloneItem(toBeUpdatedItem);
+		cloneItem.description = newDescription;
+		cloneItem.priority = newPriority;
+		cloneItem.status = newStatus;
+		var url = buildItemURL(toBeUpdatedItem); 
+		module.updateItem(url, cloneItem, callback);
+	};
+	module.updateItem = function(url, cloneItem, callback) {
 		$http.put(url, cloneItem)
 		.success(function(response) {
-			console.log("Response updateItemNextItemID:");
+			console.log("Response updateItem:");
 			console.log(response),
 			callback(response);
 		});
 	};
+	module.deleteItem = function(item, callback) {
+		var url = buildItemURL(item);
+		$http.delete(url)
+		.success(function(response) {
+			console.log("Response deleteItem:");
+			console.log(response);
+			callback(response);
+		});
+	}
+
+	function buildItemURL(item) {
+		return _urlStart + "collections/projects/" + item._id.$oid + _urlEnd;
+	}
+	function buildCloneItem(item) {
+		var cloneItem = JSON.parse(JSON.stringify(item));
+		delete cloneItem["items"];
+		delete cloneItem["_id"];
+		cloneItem.lastModified = (new Date()).toString();
+		return cloneItem;
+	}
+
 	module.loadProjects = function(user, callback) {
 		var query = {
 			"userID:": user._id.$oid

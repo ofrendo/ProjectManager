@@ -5,10 +5,36 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
     $scope.numLoaded = "Loading...";
     $scope.user = {};
     $scope.projects = [];
+    $scope.itemStatuses = [ 
+    	{ 
+    		text: "Done",
+    		iconPath: "fa-check",
+    		tooltip: "Mark 'Done'"
+    	},
+    	{
+    		text: "Delayed", 
+    		iconPath: "fa-clock-o", 
+    		tooltip: "Mark 'Delayed'"
+    	},
+    	{
+    		text: "Not done",
+    		iconPath: "fa-times",
+    		tooltip: "Mark 'Not done'"
+    	}
+    ];
+    $scope.itemInitialStatus = $scope.itemStatuses[2].text;
+    $scope.tooltips = {
+    	edit: "Edit",
+    	createPrevious: "Create previous sibling",
+    	createNext: "Create next sibling",
+    	createChild: "Create child",
+    	delete: "Delete"
+    };
 
     $scope.sortableOptions = {
     	update: function(e, ui) {
-    		var originalItems = ui.item.sortable.droptargetModel;
+    		var droptarget = ui.item.sortable.droptarget;
+    		var originalItems = droptarget.scope().$eval(droptarget.attr('ng-model'));
     		var originalIndex = ui.item.sortable.index;
     		var newIndex = ui.item.sortable.dropindex;
 
@@ -18,11 +44,11 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
     		var originalPreviousItem = originalItems[ originalIndex-1 ];
     		var draggedItem = originalItems[ originalIndex ];
     		var newPreviousItem = (newIndex > originalIndex) ? originalItems[ newIndex ] : originalItems[ newIndex-1 ];
-    		var newNextItem = (newIndex != originalItems.length-1) ? originalItems[ newIndex ] : null;
+    		var newNextItem = (newIndex > originalIndex) ? originalItems[newIndex+1] : originalItems[newIndex]
 
     		if (originalPreviousItem) {
     			//Need to find the new nextItemID for this item
-    			var localNewNextItem = originalItems[ originalItems+1 ];
+    			var localNewNextItem = originalItems[ originalIndex+1 ];
     			var newNextItemID = (localNewNextItem) ? localNewNextItem._id.$oid : null;
 
     			db.updateItemNextItemID(originalPreviousItem, newNextItemID, function() {
@@ -41,10 +67,9 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
     		var newNextItemID = (newNextItem) ? newNextItem._id.$oid : null;
     		db.updateItemNextItemID(draggedItem, newNextItemID, function() {
     			draggedItem.nextItemID = newNextItemID;
-			});	
+			});
 
-    	},
-    	index: 0
+    	}
     };
 
 	//Event functions
@@ -199,14 +224,26 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 			controller: "popup",
 			scope: $scope
 		});
-	}
-
+	};
+	$scope.onUpdateItemClick = function(item) {
+		resetItems();
+		$scope.selectedItem = item;
+		$scope.updateItem = true;
+		ngDialog.open({
+			template: "templateItem",
+			controller: "popup",
+			scope: $scope
+		});
+	};
+	
 	function resetItems() {
 		delete $scope["selectedProject"];
 		delete $scope["selectedPreviousItem"];
+		delete $scope["selectedItem"];
 		delete $scope["selectedNextItem"];
 		delete $scope["selectedParentItem"];
 		delete $scope["createChild"];
+		delete $scope["updateItem"];
 	}
 	
 
@@ -248,6 +285,23 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 
 		});
 	};
+	$scope.submitUpdateItem = function(item, newDescription, newPriority) {
+		db.updateItemDetails(item, newDescription, newPriority, item.status, function(response) {
+			item.description = newDescription;
+			item.priority = newPriority;
+		});
+	};
+	$scope.submitUpdateItemStatus = function(item, newStatus) {
+		db.updateItemDetails(item, item.description, item.priority, newStatus, function(response) {
+			item.status = newStatus;
+		});
+	};
+	$scope.submitDeleteItem = function(item, parentItems) {
+		db.deleteItem(item, function(response) {
+			var index = parentItems.indexOf(item);
+			parentItems.splice(index, 1);
+		});
+	};
 
 	//Utility methods
 	$scope.prepareUserData = function(user) {
@@ -261,7 +315,7 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 	$scope.prepareItem = function(item, projectID) {
 		item.created = (new Date()).toString();
 		item.lastModified = (new Date()).toString();
-		item.status = "Not done";
+		item.status = $scope.itemInitialStatus;
 		item.projectID = projectID;
 		item.userID = $scope.user._id.$oid;
 	};

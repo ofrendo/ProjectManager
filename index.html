@@ -5,14 +5,15 @@
 		<script src="http://cdn.jsdelivr.net/g/jquery@1,jquery.ui@1.10%28jquery.ui.core.min.js+jquery.ui.widget.min.js+jquery.ui.mouse.min.js+jquery.ui.sortable.min.js%29,angularjs@1.2,angular.ui-sortable"></script>
 		<script src="//cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.0/js/ngDialog.min.js"></script>
 		<script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular-route.min.js"></script>
-		<script src="//cdn.jsdelivr.net/angular.dragdrop/1.07/angular-dragdrop.min.js"></script>
 		<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/sha256.js"></script>
 		<script src="js/settings.js"></script>
 		<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
 		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.0/css/ngDialog-theme-default.min.css">
 		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.0/css/ngDialog-theme-plain.min.css">
 		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.0/css/ngDialog.min.css">
+		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 		<link rel="stylesheet" href="css/style.css">
+		<link rel="stylesheet" href="css/buttonTooltip.css">
 		<title>{{menuTitle}}</title>
 	</head>
 	<body>
@@ -30,9 +31,10 @@
 		<div id="divContent" class="pure-u-11-12">
 			
 			<div ng-repeat="project in projects">
-				<button class="pure-button" ng-click="onCreateItemChildClick(project)">Create item for {{project._id.$oid}}</button>
-				<ul ui-sortable="sortableOptions" ng-model="project.items">
-					<li ng-repeat="item in project.items" 
+				<button class="pure-button" ng-click="onCreateItemChildClick(project)">Create item for '{{project.name}}'</button>
+				<ul class="listProjectItems" ng-model="project.items" ui-sortable="sortableOptions">
+					<li class="projectItemLi" 
+						ng-repeat="item in project.items" 
 						ng-init="parentItems = project.items; parentItem = project"
 						ng-include="'templateProjectItem'" >
 					</li>
@@ -43,15 +45,46 @@
 
 			<p>Number of times loaded: {{numLoaded}}</p>
 		</div>
+
 		<script type="text/ng-template" id="templateProjectItem">
-			<span ng-click="onCreateItemClick(project, item)">
+			<span class="projectItemRow">
+			<span class="projectItem" ng-click="onCreateItemClick(project, item)">
 				{{item.description}}
 			</span>
-			<button ng-click="onCreateItemSiblingClick(project, item, parentItems[$index+1])">Create next sibling</button>
-			<button ng-click="onCreateItemSiblingClick(project, parentItems[$index-1], item)">Create previous sibling</button>
-			<button ng-click="onCreateItemChildClick(project, item)">Create child</button>
-			<ul ng-model="parentItem.items" ng-init="parentItem = item" ui-sortable="sortableOptions">
-				<li ng-repeat="item in item.items" 
+			<span class="buttonContainer">
+				<button data-tooltip="{{tooltips.edit}}" ng-click="onUpdateItemClick(item)" class="pure-button"><i class="fa fa-pencil"></i></button> <!-- Edit item button -->
+				<button data-tooltip="{{status.tooltip}}" 
+						class="pure-button" 
+						ng-repeat="status in itemStatuses" 
+						ng-click="submitUpdateItemStatus(item, status.text)" 
+						ng-disabled="status.text == item.status">
+						<i class="fa {{status.iconPath}}"></i>
+				</button>
+				<button data-tooltip="{{tooltips.createPrevious}}"
+						ng-click="onCreateItemSiblingClick(project, parentItems[$index-1], item)" 
+						class="pure-button">
+						<i class="fa fa-arrow-up"></i>
+				</button> <!-- Create previous sibling -->
+				<button data-tooltip="{{tooltips.createNext}}"
+						ng-click="onCreateItemSiblingClick(project, item, parentItems[$index+1])" 
+						class="pure-button">
+						<i class="fa fa-arrow-down"></i>
+				</button> <!-- Create next sibling -->
+				<button data-tooltip="{{tooltips.createChild}}"
+						ng-click="onCreateItemChildClick(project, item)"
+						class="pure-button" >
+						<i class="fa fa-arrow-right"></i>
+				</button> <!-- Create child -->
+				<button data-tooltip="{{tooltips.delete}}"
+						ng-click="submitDeleteItem(item, parentItems)" 
+						class="pure-button">
+						<i class="fa fa-trash"></i>
+				</button> <!-- Delete -->
+			</span>
+			</span>
+			<ul class="listProjectItems" ng-model="parentItem.items" ng-init="parentItem = item" ui-sortable="sortableOptions">
+				<li class="projectItemLi" 
+					ng-repeat="item in item.items" 
 					ng-init="parentItems = parentItem.items" 
 					ng-include="'templateProjectItem'">
 				</li>
@@ -123,9 +156,9 @@
 			</form>
 		</script>
 		<script type="text/ng-template" id="templateItem">
-			<form class="pure-form pure-form-stacked" ng-submit="onCreateItemSubmit()">
+			<form class="pure-form pure-form-stacked" ng-submit="itemSubmitFunction()">
 			    <fieldset>
-			        <legend>Create item</legend>
+			        <legend>{{popupTitle}}</legend>
 
 			        <label for="description">Description</label>
 			        <textarea class="pure-input-1" rows="2" ng-model="item.description" id="description" type="text" placeholder="Description" autofocus>
@@ -134,7 +167,7 @@
 					<label for="priority">Priority</label>
 			        <input class="pure-input-1-4" ng-init="item.priority=1" ng-model="item.priority" id="priority" type="number" placeholder="Priority">
 
-			        <button type="submit" class="pure-button pure-button-primary">Create</button>
+			        <button type="submit" class="pure-button pure-button-primary">{{submitButtonTitle}}</button>
 			    </fieldset>
 			</form>
 		</script>

@@ -9,6 +9,50 @@
 	display: block;
 }
 
+/* Project items styling */
+ul.listProjectItems {
+	list-style-type: none;
+	margin: 0;
+}
+.projectItem {
+	padding: 9px 4.5px 9px 9px;
+	border-radius: 3px;
+	display: inline-block;
+}
+.projectItemLi {
+	/*margin: 1px 0;*/
+}
+.projectItemLi:first-child {
+	margin-top: 1em;
+}
+.projectItemLi:last-child {
+	margin-bottom: 1em;
+}
+.projectItemLi>.projectItemRow>.buttonContainer>button.pure-button {
+	margin: 0 2px;
+}
+
+/* Button container styling*/
+.buttonContainer {
+	display: none;
+}
+.projectItemRow:hover>.buttonContainer {
+	display: inline-block;
+}
+.buttonContainer:hover {
+	display: inline-block;
+}
+
+
+
+/* List dragging css */
+.projectItem:hover {
+	background-color: #f2f2f2;
+}
+.projectItem:active {
+	background-color: #d9d9d9;
+}
+
 
 
 /* Overwrite popup css */

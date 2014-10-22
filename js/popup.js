@@ -35,11 +35,21 @@ app.controller("popup", ["$scope", "ngDialog", function($scope, ngDialog) {
 	};
 
 
-	if ($scope.$parent.selectedProject) {
+	if ($scope.$parent.updateItem === true) {
+		//Item update
+		$scope.popupTitle = "Update item";
+		$scope.submitButtonTitle = "Update";
+		$scope.item = JSON.parse(JSON.stringify($scope.$parent.selectedItem));
+		$scope.itemSubmitFunction = onUpdateItemSubmit;
+	}
+	else if ($scope.$parent.selectedProject) {
 		//Item creation
+		$scope.popupTitle = "Create item";
+		$scope.submitButtonTitle = "Create";
 		$scope.item = {
 			description: "Description for item"
 		};
+		$scope.itemSubmitFunction = onCreateItemSubmit;
 
 		if ($scope.$parent.createChild === true) { //($scope.$parent.selectedPreviousItem || $scope.$parent.selectedNextItem) {
 			//Item child creation
@@ -52,11 +62,16 @@ app.controller("popup", ["$scope", "ngDialog", function($scope, ngDialog) {
 			$scope.item.parentItemID = validItem.parentItemID;
 			$scope.item.nextItemID = ($scope.$parent.selectedNextItem) ? $scope.$parent.selectedNextItem._id.$oid : null;			
 		}
-		
 	}
 
-	$scope.onCreateItemSubmit = function() {
+	function onCreateItemSubmit() {
 		$scope.$parent.submitCreateItem($scope.selectedProject, $scope.item, $scope.$parent.selectedPreviousItem);
+		ngDialog.close();
+	};
+	function onUpdateItemSubmit() {
+		$scope.$parent.submitUpdateItem($scope.$parent.selectedItem, 
+										$scope.item.description, 
+										$scope.item.priority);
 		ngDialog.close();
 	};
 
