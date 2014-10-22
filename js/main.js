@@ -164,7 +164,7 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 			scope: $scope
 		});
 	};
-	$scope.onCreateItemSiblingClick = function(project, previousItem, nextItem, parentItems) {
+	$scope.onCreateItemSiblingClick = function(project, previousItem, nextItem) {
 		resetItems();
 		//previousItem is previous sibling, can be undefined, first item in array in that case
 		//nextItem is used if item is being inserted between two items, can be undefined, last item in array in that case

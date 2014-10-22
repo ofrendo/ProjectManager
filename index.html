@@ -33,8 +33,8 @@
 				<button class="pure-button" ng-click="onCreateItemChildClick(project)">Create item for {{project._id.$oid}}</button>
 				<ul ui-sortable="sortableOptions" ng-model="project.items">
 					<li ng-repeat="item in project.items" 
-						ng-include="'templateProjectItem'" 
-						ng-init="parentItems = project.items; parentItem = project">
+						ng-init="parentItems = project.items; parentItem = project"
+						ng-include="'templateProjectItem'" >
 					</li>
 				</ul>
 				<br>
@@ -47,13 +47,13 @@
 			<span ng-click="onCreateItemClick(project, item)">
 				{{item.description}}
 			</span>
-			<button ng-click="onCreateItemSiblingClick(project, item, parentItems[$index+1], parentItems)">Create next sibling</button>
-			<button ng-click="onCreateItemSiblingClick(project, parentItems[$index-1], item, parentItems)">Create previous sibling</button>
+			<button ng-click="onCreateItemSiblingClick(project, item, parentItems[$index+1])">Create next sibling</button>
+			<button ng-click="onCreateItemSiblingClick(project, parentItems[$index-1], item)">Create previous sibling</button>
 			<button ng-click="onCreateItemChildClick(project, item)">Create child</button>
 			<ul ng-model="parentItem.items" ng-init="parentItem = item" ui-sortable="sortableOptions">
 				<li ng-repeat="item in item.items" 
-					ng-include="'templateProjectItem'" 
-					ng-init="parentItems = parentItem.items">
+					ng-init="parentItems = parentItem.items" 
+					ng-include="'templateProjectItem'">
 				</li>
 			</ul>
 		</script>
