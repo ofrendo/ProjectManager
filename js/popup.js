@@ -1,5 +1,5 @@
 app.controller("popup", ["$scope", "ngDialog", function($scope, ngDialog) {
-	if (localStorage.getItem("email") !== "null" && localstorage.getItem("email") !== null) {
+	if (localStorage.getItem("email") !== "null" && localStorage.getItem("email") !== null) {
 		$scope.user = {
 			name: "Oliver",
 			email: localStorage.getItem("email"),

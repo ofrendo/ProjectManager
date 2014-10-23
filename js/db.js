@@ -128,7 +128,7 @@ app.factory("db", ["$http", function($http) {
 		};
 		var url = urls.projects + "&q=" + JSON.stringify(query);
 		console.log("loadProjects: " + url);
-		$http.get(urls.projects)
+		$http.get(url)
 		.success(function(response) {
 			console.log("Response loadProjects:");
 			console.log(response);
