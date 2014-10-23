@@ -29,7 +29,6 @@
 			</ul>
 		</div>
 		<div id="divContent" class="pure-u-11-12">
-			
 			<div ng-repeat="project in projects">
 				<button class="pure-button" ng-click="onCreateItemChildClick(project)">Create item for '{{project.name}}'</button>
 				<ul class="listProjectItems" ng-model="project.items" ui-sortable="sortableOptions">
@@ -41,14 +40,19 @@
 				</ul>
 				<br>
 			</div>
-
-
-			<p>Number of times loaded: {{numLoaded}}</p>
 		</div>
+		<i class="fa fa-play"></i> <!-- cursor object -->
+		<span id="numLoaded">Number of times loaded: {{numLoaded}}</span>
 
 		<script type="text/ng-template" id="templateProjectItem">
 			<span class="projectItemRow">
-			<span class="projectItem" ng-click="onCreateItemClick(project, item)">
+
+			<button class="pure-button buttonLeft"
+					ng-click="toggleShowChildItems(item)"
+					ng-show="item.items.length > 0">
+				<i ng-class="{true: 'fa fa-chevron-down', false: 'fa fa-chevron-right', 'null': 'fa fa-chevron-right'}[getShowChildItems(item)]"></i>
+			</button>
+			<span class="projectItem" ng-click="onCreateItemClick(project, item)" ng-style="{'text-decoration': getStatusTextStyle(item.status)}">
 				{{item.description}}
 			</span>
 			<span class="buttonContainer">
@@ -71,7 +75,7 @@
 						<i class="fa fa-arrow-down"></i>
 				</button> <!-- Create next sibling -->
 				<button data-tooltip="{{tooltips.createChild}}"
-						ng-click="onCreateItemChildClick(project, item)"
+						ng-click="onCreateItemChildClick(project, item); setShowChildItems(item, true)"
 						class="pure-button" >
 						<i class="fa fa-arrow-right"></i>
 				</button> <!-- Create child -->
@@ -82,7 +86,11 @@
 				</button> <!-- Delete -->
 			</span>
 			</span>
-			<ul class="listProjectItems" ng-model="parentItem.items" ng-init="parentItem = item" ui-sortable="sortableOptions">
+			<ul class="listProjectItems" 
+				ng-model="parentItem.items" 
+				ng-init="parentItem = item" 
+				ui-sortable="sortableOptions"
+				ng-show="getShowChildItems(item)">
 				<li class="projectItemLi" 
 					ng-repeat="item in item.items" 
 					ng-init="parentItems = parentItem.items" 
@@ -161,7 +169,8 @@
 			        <legend>{{popupTitle}}</legend>
 
 			        <label for="description">Description</label>
-			        <textarea class="pure-input-1" rows="2" ng-model="item.description" id="description" type="text" placeholder="Description" autofocus>
+			        <!-- <textarea class="pure-input-1" rows="2" ng-model="item.description" id="description" type="text" placeholder="Description" autofocus> -->
+			        <input class="pure-input-1" ng-model="item.description" id="description" type="text" placeholder="Description" autofocus>
 			        </textarea>
 
 					<label for="priority">Priority</label>

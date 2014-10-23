@@ -1,5 +1,21 @@
 app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $http, db, ngDialog) {
     var _menuTitle = "Personal project manager";
+    $scope.localStorage = localStorage;
+    $scope.setShowChildItems = function(item, value) {
+    	localStorage.setItem(item._id.$oid + 'showChildItems', value);
+    };
+	$scope.getShowChildItems = function(item) {
+		return localStorage.getItem(item._id.$oid + 'showChildItems');
+	};
+	$scope.toggleShowChildItems = function(item) {
+    	var currentValue = $scope.getShowChildItems(item);
+    	if (currentValue == "true") 
+    		$scope.setShowChildItems(item, false);
+    	else
+    		$scope.setShowChildItems(item, true);
+    };
+	
+
     $scope.menuTitle = _menuTitle;
     $scope.loggedIn = false;
     $scope.numLoaded = "Loading...";
@@ -9,17 +25,20 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
     	{ 
     		text: "Done",
     		iconPath: "fa-check",
-    		tooltip: "Mark 'Done'"
+    		tooltip: "Mark 'Done'",
+    		textDecoration: "line-through"
     	},
     	{
     		text: "Delayed", 
     		iconPath: "fa-clock-o", 
-    		tooltip: "Mark 'Delayed'"
+    		tooltip: "Mark 'Delayed'",
+    		textDecoration: "underline"
     	},
     	{
     		text: "Not done",
     		iconPath: "fa-times",
-    		tooltip: "Mark 'Not done'"
+    		tooltip: "Mark 'Not done'",
+    		textDecoration: "initial"
     	}
     ];
     $scope.itemInitialStatus = $scope.itemStatuses[2].text;
@@ -30,8 +49,12 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
     	createChild: "Create child",
     	delete: "Delete"
     };
-    $scope.getStatusStyle(status) {
-    };
+    $scope.getStatusTextStyle = function(statusText) {
+    	for (var i = 0; i < $scope.itemStatuses.length; i++) {
+    		if ($scope.itemStatuses[i].text == statusText) 
+    			return $scope.itemStatuses[i].textDecoration;
+    	}
+    };	
 
     $scope.sortableOptions = {
     	update: function(e, ui) {
@@ -174,7 +197,6 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 		for (var i = 0; i < orderedItems.length; i++) {
 			orderItems(orderedItems[i]);
 		}
-
 	}
 
 	$scope.onLogoutClick = function() {
@@ -182,6 +204,8 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 		$scope.menuTitle = _menuTitle;
 		$scope.loggedIn = false;
 		$scope.projects = [];
+
+		localStorage.removeItem("remember");
 	};
 	$scope.onCreateProjectClick = function() {
 		resetItems();

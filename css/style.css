@@ -5,44 +5,59 @@
 
 #divContent {
 	clear: both;
-	margin: 0 auto;
+	margin: 20px auto;
 	display: block;
+}
+#numLoaded {
+	position: fixed;
+	bottom: 0;
+	right: 0;
 }
 
 /* Project items styling */
 ul.listProjectItems {
-	list-style-type: none;
+	/*list-style-type: none;*/
 	margin: 0;
 }
 .projectItem {
-	padding: 9px 4.5px 9px 9px;
-	border-radius: 3px;
+	padding: 2px 1px 2px 2px;
+	border-radius: 2px;
 	display: inline-block;
 }
 .projectItemLi {
 	/*margin: 1px 0;*/
 }
 .projectItemLi:first-child {
-	margin-top: 1em;
+	margin-top: 0.5em;
 }
 .projectItemLi:last-child {
-	margin-bottom: 1em;
+	margin-bottom: 0.5em;
 }
-.projectItemLi>.projectItemRow>.buttonContainer>button.pure-button {
+.projectItemLi>.projectItemRow button.pure-button {
 	margin: 0 2px;
+	padding: 2px 4px;
 }
+.projectItemLi>.projectItemRow button.buttonLeft {
+	margin-left: -25.5px;
+	margin-right: -3px;
+	background-color: white;
+}
+.projectItemLi>.projectItemRow button.buttonLeft>i {
+	width: 16px;
+}
+
 
 /* Button container styling*/
-.buttonContainer {
+.buttonContainer { 
+	display: none; /* Dont show by default */
+	padding-left: 20px;
+}
+.projectItemRow:hover>.buttonContainer, .buttonContainer:hover { /* Show when hovering over row and the container */
+	display: inline-block;
+}
+.projectItem:active + .buttonContainer { /*Dont show during dragging */
 	display: none;
 }
-.projectItemRow:hover>.buttonContainer {
-	display: inline-block;
-}
-.buttonContainer:hover {
-	display: inline-block;
-}
-
 
 
 /* List dragging css */
@@ -51,6 +66,7 @@ ul.listProjectItems {
 }
 .projectItem:active {
 	background-color: #d9d9d9;
+	cursor: all-scroll;
 }
 
 
@@ -59,8 +75,6 @@ ul.listProjectItems {
 .ngdialog.ngdialog-theme-default {
 	padding-top: 20px;
 }
-
-
 textarea {
 	resize: none;
 }

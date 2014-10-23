@@ -101,6 +101,7 @@ app.factory("db", ["$http", function($http) {
 		});
 	};
 	module.deleteItem = function(item, callback) {
+		//NEED TO DELETE ALL CHILD ELEMENTS AS WELL
 		var url = buildItemURL(item);
 		$http.delete(url)
 		.success(function(response) {
