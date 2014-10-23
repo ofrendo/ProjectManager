@@ -7,6 +7,11 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 	$scope.getShowChildItems = function(item) {
 		return localStorage.getItem(item._id.$oid + 'showChildItems');
 	};
+	$scope.setInitValue = function(item) {
+    	var currentValue = $scope.getShowChildItems(item);
+    	if (currentValue == null)  //Value has not been set before
+    		$scope.setShowChildItems(item, true);
+    };
 	$scope.toggleShowChildItems = function(item) {
     	var currentValue = $scope.getShowChildItems(item);
     	if (currentValue == "true") 
@@ -14,7 +19,7 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
     	else
     		$scope.setShowChildItems(item, true);
     };
-	
+
 
     $scope.menuTitle = _menuTitle;
     $scope.loggedIn = false;
@@ -144,13 +149,18 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 			//Create hierachy by associating items with their parent items
 			for (var i = 0; i < response.length; i++) {
 				if (response[i].projectID !== "root") {
-					var item = response[i];
+					var item = response[i]; //Item to be pushed to array
 					if (item.parentItemID !== "root") {
 						//Find the item this item is the child of
 						for (var j = 0; j < response.length; j++) {
 							if (item.parentItemID == response[j]._id.$oid) {
-								item.items = [];
+
+								if (!item.items) 
+									item.items = [];
+								if (!response[j].items) 
+									response[j].items = [];
 								response[j].items.push(item);
+
 							}
 						}
 					}
@@ -161,13 +171,18 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 				orderItems($scope.projects[i]);
 			}
 
+			if ($scope.projects.length > 0) {
+				$scope.selectedItem = $scope.projects[0];
+			}
 		});
 	};
 
 	function orderItems(parentItem) {
-		if (parentItem.items.length === 0) {
+		if (!parentItem) 
 			return;
-		}
+		if (parentItem.items.length === 0) 
+			return;
+		
 
 		//Find last item
 		var lastItem;
@@ -215,15 +230,16 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 			scope: $scope
 		});
 	};
-	$scope.onCreateItemSiblingClick = function(project, previousItem, nextItem) {
+	$scope.onCreateItemSiblingClick = function(project, previousItem, nextItem, selectedItem) {
 		resetItems();
 		//previousItem is previous sibling, can be undefined, first item in array in that case
 		//nextItem is used if item is being inserted between two items, can be undefined, last item in array in that case
 		$scope.selectedProject = project;
+		$scope.selectedItem = selectedItem;
 		$scope.selectedPreviousItem = previousItem;
 		$scope.selectedNextItem = nextItem;
-		console.log(previousItem);
-		console.log(nextItem);
+		//console.log(previousItem);
+		//console.log(nextItem);
 		ngDialog.open({
 			template: "templateItem",
 			controller: "popup",
@@ -235,6 +251,7 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 		//Parent item is one level above, can be undefined, root level in that case
 		$scope.createChild = true;
 		$scope.selectedProject = project;
+		$scope.selectedItem = parentItem || project;
 		$scope.selectedParentItem = parentItem;
 		if (parentItem) {
 			if (parentItem.items.length > 0) {
@@ -265,7 +282,7 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 	function resetItems() {
 		delete $scope["selectedProject"];
 		delete $scope["selectedPreviousItem"];
-		delete $scope["selectedItem"];
+		//delete $scope["selectedItem"];
 		delete $scope["selectedNextItem"];
 		delete $scope["selectedParentItem"];
 		delete $scope["createChild"];
@@ -294,7 +311,9 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 		db.createProject(project, function(response) {
 			response.items = [];
 			$scope.projects.push(response);
-			console.log($scope.projects);
+			if ($scope.projects.length === 1) {
+				$scope.selectedItem = response;
+			}
 		});
 	};
 	$scope.submitCreateItem = function(project, item, itemToBeUpdated) {
@@ -318,16 +337,26 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 		});
 	};
 	$scope.submitUpdateItemStatus = function(item, newStatus) {
+		$scope.selectedItem = item;
 		db.updateItemDetails(item, item.description, item.priority, newStatus, function(response) {
 			item.status = newStatus;
 		});
 	};
 	$scope.submitDeleteItem = function(item, parentItems) {
+		deleteChildItems(item, parentItems);
+	};
+
+	//Delete an item and its children recursively
+	function deleteChildItems(item, parentItems) {
+		for (var i = 0; i < item.items.length; i++) {
+			deleteChildItems(item.items[i], item.items);
+		}
 		db.deleteItem(item, function(response) {
 			var index = parentItems.indexOf(item);
 			parentItems.splice(index, 1);
+			localStorage.removeItem(item._id.$oid + "showChildItems");
 		});
-	};
+	}
 
 	//Utility methods
 	$scope.prepareUserData = function(user) {

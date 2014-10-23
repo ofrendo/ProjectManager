@@ -30,29 +30,32 @@
 		</div>
 		<div id="divContent" class="pure-u-11-12">
 			<div ng-repeat="project in projects">
-				<button class="pure-button" ng-click="onCreateItemChildClick(project)">Create item for '{{project.name}}'</button>
+				<button data-itemID="{{project._id.$oid}}" class="pure-button projectRootButton" ng-click="onCreateItemChildClick(project)">Create item for '{{project.name}}'</button>
 				<ul class="listProjectItems" ng-model="project.items" ui-sortable="sortableOptions">
 					<li class="projectItemLi" 
 						ng-repeat="item in project.items" 
 						ng-init="parentItems = project.items; parentItem = project"
-						ng-include="'templateProjectItem'" >
+						ng-include="'templateProjectItem'" 
+						data-itemID="{{item._id.$oid}}">
 					</li>
 				</ul>
 				<br>
 			</div>
 		</div>
-		<i class="fa fa-play"></i> <!-- cursor object -->
+		<cursor id="cursor" ng-model="selectedItem" ng-show="projects.length>0"></cursor>
 		<span id="numLoaded">Number of times loaded: {{numLoaded}}</span>
 
 		<script type="text/ng-template" id="templateProjectItem">
 			<span class="projectItemRow">
 
 			<button class="pure-button buttonLeft"
+					ng-init="setInitValue(item)"
 					ng-click="toggleShowChildItems(item)"
 					ng-show="item.items.length > 0">
 				<i ng-class="{true: 'fa fa-chevron-down', false: 'fa fa-chevron-right', 'null': 'fa fa-chevron-right'}[getShowChildItems(item)]"></i>
 			</button>
-			<span class="projectItem" ng-click="onCreateItemClick(project, item)" ng-style="{'text-decoration': getStatusTextStyle(item.status)}">
+			<span class="projectItem" 
+				  ng-style="{'text-decoration': getStatusTextStyle(item.status)}">
 				{{item.description}}
 			</span>
 			<span class="buttonContainer">
@@ -65,19 +68,19 @@
 						<i class="fa {{status.iconPath}}"></i>
 				</button>
 				<button data-tooltip="{{tooltips.createPrevious}}"
-						ng-click="onCreateItemSiblingClick(project, parentItems[$index-1], item)" 
+						ng-click="onCreateItemSiblingClick(project, parentItems[$index-1], item, item)" 
 						class="pure-button">
 						<i class="fa fa-arrow-up"></i>
 				</button> <!-- Create previous sibling -->
 				<button data-tooltip="{{tooltips.createNext}}"
-						ng-click="onCreateItemSiblingClick(project, item, parentItems[$index+1])" 
+						ng-click="onCreateItemSiblingClick(project, item, parentItems[$index+1], item)" 
 						class="pure-button">
 						<i class="fa fa-arrow-down"></i>
 				</button> <!-- Create next sibling -->
 				<button data-tooltip="{{tooltips.createChild}}"
 						ng-click="onCreateItemChildClick(project, item); setShowChildItems(item, true)"
 						class="pure-button" >
-						<i class="fa fa-arrow-right"></i>
+						<i class="fa fa-rotate-45 fa-arrow-right"></i>
 				</button> <!-- Create child -->
 				<button data-tooltip="{{tooltips.delete}}"
 						ng-click="submitDeleteItem(item, parentItems)" 
@@ -94,7 +97,8 @@
 				<li class="projectItemLi" 
 					ng-repeat="item in item.items" 
 					ng-init="parentItems = parentItem.items" 
-					ng-include="'templateProjectItem'">
+					ng-include="'templateProjectItem'"
+					data-itemID="{{item._id.$oid}}">
 				</li>
 			</ul>
 		</script>
@@ -182,6 +186,7 @@
 		</script>
 	</body>
 	<script src="js/app.js"></script>
+	<script src="js/cursor.js"></script>
 	<script src="js/main.js"></script>
 	<script src="js/db.js"></script>	
 	<script src="js/popup.js"></script>

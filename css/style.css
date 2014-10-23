@@ -46,6 +46,19 @@ ul.listProjectItems {
 	width: 16px;
 }
 
+/* Cursor styling */
+#cursor {
+	position: absolute;
+	/*margin-left: -26px;*/
+	left: 12px;
+	margin-top: 8px;
+}
+.projectItemRow>#cursor {
+	/*margin-left: -50px;*/
+	left: 26px;
+	margin-top: 3px;
+}
+
 
 /* Button container styling*/
 .buttonContainer { 
@@ -77,4 +90,10 @@ ul.listProjectItems {
 }
 textarea {
 	resize: none;
+}
+
+
+/* Add icon rules */
+.fa-rotate-45 {
+	transform: rotate(45deg);
 }

@@ -124,7 +124,7 @@ app.factory("db", ["$http", function($http) {
 
 	module.loadProjects = function(user, callback) {
 		var query = {
-			"userID:": user._id.$oid
+			"userID": user._id.$oid
 		};
 		var url = urls.projects + "&q=" + JSON.stringify(query);
 		console.log("loadProjects: " + url);
