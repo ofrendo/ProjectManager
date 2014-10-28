@@ -10,7 +10,7 @@
 		<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
 		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.0/css/ngDialog-theme-default.min.css">
 		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.0/css/ngDialog-theme-plain.min.css">
-		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.0/css/ngDialog.min.css">
+		<link rel="stylesheet" href="lib/css/ngDialog.css"> <!-- //cdnjs.cloudflare.com/ajax/libs/ng-dialog/0.3.0/css/ngDialog.min.css -->
 		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 		<link rel="stylesheet" href="css/style.css">
 		<link rel="stylesheet" href="css/buttonTooltip.css">
@@ -31,18 +31,29 @@
 		<div id="divContent" class="pure-u-11-12">
 			<div ng-repeat="project in projects">
 				<button data-itemID="{{project._id.$oid}}" class="pure-button projectRootButton" ng-click="onCreateItemChildClick(project)">Create item for '{{project.name}}'</button>
+				<button data-tooltip="{{tooltips.edit}}" 
+						ng-click="onUpdateProjectClick(project)" 
+						class="pure-button projectRootEdit">
+						<i class="fa fa-pencil"></i>
+				</button> <!-- Edit item button -->
+				<button data-tooltip="{{tooltips.delete}}"
+						ng-click="submitDeleteProject(project)" 
+						class="pure-button projectRootDelete">
+						<i class="fa fa-trash"></i>
+				</button> <!-- Delete -->
 				<ul class="listProjectItems" ng-model="project.items" ui-sortable="sortableOptions">
 					<li class="projectItemLi" 
 						ng-repeat="item in project.items" 
 						ng-init="parentItems = project.items; parentItem = project"
 						ng-include="'templateProjectItem'" 
-						data-itemID="{{item._id.$oid}}">
+						data-itemID="{{item._id.$oid}}"
+						ng-click="onSetSelectedItem(item, $event)">
 					</li>
 				</ul>
 				<br>
 			</div>
 		</div>
-		<cursor id="cursor" ng-model="selectedItem" ng-show="projects.length>0"></cursor>
+		<cursor id="cursor" ng-model="selectedItem" ng-show="projects.length>0 && showCursor"></cursor>
 		<span id="numLoaded">Number of times loaded: {{numLoaded}}</span>
 
 		<script type="text/ng-template" id="templateProjectItem">
@@ -51,7 +62,7 @@
 			<button class="pure-button buttonLeft"
 					ng-init="setInitValue(item)"
 					ng-click="toggleShowChildItems(item)"
-					ng-show="item.items.length > 0">
+					ng-show="item.items.length > 0" onfocus="this.blur();">
 				<i ng-class="{true: 'fa fa-chevron-down', false: 'fa fa-chevron-right', 'null': 'fa fa-chevron-right'}[getShowChildItems(item)]"></i>
 			</button>
 			<span class="projectItem" 
@@ -59,7 +70,11 @@
 				{{item.description}}
 			</span>
 			<span class="buttonContainer">
-				<button data-tooltip="{{tooltips.edit}}" ng-click="onUpdateItemClick(item)" class="pure-button"><i class="fa fa-pencil"></i></button> <!-- Edit item button -->
+				<button data-tooltip="{{tooltips.edit}}" 
+						ng-click="onUpdateItemClick(item)" 
+						class="pure-button">
+						<i class="fa fa-pencil"></i>
+				</button> <!-- Edit item button -->
 				<button data-tooltip="{{status.tooltip}}" 
 						class="pure-button" 
 						ng-repeat="status in itemStatuses" 
@@ -83,7 +98,7 @@
 						<i class="fa fa-rotate-45 fa-arrow-right"></i>
 				</button> <!-- Create child -->
 				<button data-tooltip="{{tooltips.delete}}"
-						ng-click="submitDeleteItem(item, parentItems)" 
+						ng-click="submitDeleteItem(item, parentItems, $event)" 
 						class="pure-button">
 						<i class="fa fa-trash"></i>
 				</button> <!-- Delete -->
@@ -98,7 +113,8 @@
 					ng-repeat="item in item.items" 
 					ng-init="parentItems = parentItem.items" 
 					ng-include="'templateProjectItem'"
-					data-itemID="{{item._id.$oid}}">
+					data-itemID="{{item._id.$oid}}"
+					ng-click="onSetSelectedItem(item, $event)">
 				</li>
 			</ul>
 		</script>
@@ -147,9 +163,9 @@
 			</form>
 		</script>
 		<script type="text/ng-template" id="templateProject">
-			<form class="pure-form pure-form-stacked" ng-submit="onProjectSubmit()">
+			<form class="pure-form pure-form-stacked" ng-submit="projectSubmitFunction()">
 			    <fieldset>
-			        <legend>Create project</legend>
+			        <legend>{{popupTitle}}</legend>
 
 			        <label for="name">Name</label>
 			        <input ng-model="project.name" id="name" type="text" placeholder="Name">
@@ -163,7 +179,7 @@
 			        	<option>Private</option>
 			        </select>
 
-			        <button type="submit" class="pure-button pure-button-primary">Create</button>
+			        <button type="submit" class="pure-button pure-button-primary">{{submitButtonTitle}}</button>
 			    </fieldset>
 			</form>
 		</script>
@@ -174,7 +190,7 @@
 
 			        <label for="description">Description</label>
 			        <!-- <textarea class="pure-input-1" rows="2" ng-model="item.description" id="description" type="text" placeholder="Description" autofocus> -->
-			        <input class="pure-input-1" ng-model="item.description" id="description" type="text" placeholder="Description" autofocus>
+			        <input class="pure-input-1" ng-model="item.description" id="description" type="text" placeholder="Description">
 			        </textarea>
 
 					<label for="priority">Priority</label>

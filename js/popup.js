@@ -1,4 +1,22 @@
 app.controller("popup", ["$scope", "ngDialog", function($scope, ngDialog) {
+
+	$scope.$parent.isDialogOpen = true;
+	var oldCloseFunction = ngDialog.close;
+	(function($parentScope) {
+		ngDialog.close = function() {
+			$parentScope.isDialogOpen = false;
+			oldCloseFunction.apply(ngDialog, arguments);
+			$parentScope.removeKeyListeners();
+			$parentScope.applyKeyListeners();
+		};
+	})($scope.$parent);
+
+
+	//Autofocus first input
+	$scope.$on('ngDialog.opened', function (e, $dialog) {
+    	$dialog.find("input:first").focus();
+	});
+
 	if (localStorage.getItem("email") !== "null" && localStorage.getItem("email") !== null) {
 		$scope.user = {
 			name: "Oliver",
@@ -38,14 +56,31 @@ app.controller("popup", ["$scope", "ngDialog", function($scope, ngDialog) {
 	}
 
 
-	//$scope.projects = $scope.$parent.projects
-	$scope.project = { name: "ProjectName" };
-	$scope.onProjectSubmit = function() {
+	//Project
+	if ($scope.$parent.updateProject) {
+		$scope.project = JSON.parse(JSON.stringify($scope.$parent.updateProject));
+		$scope.popupTitle = "Update project";
+		$scope.submitButtonTitle = "Update";
+		$scope.projectSubmitFunction = onProjectUpdate;
+	}	
+	else {
+		$scope.project = { name: "ProjectName" };
+		$scope.popupTitle = "Create project";
+		$scope.submitButtonTitle = "Create";
+		$scope.projectSubmitFunction = onProjectSubmit;
+	}
+
+	function onProjectSubmit() {
 		$scope.$parent.submitProject($scope.project);
+		ngDialog.close();
+	};
+	function onProjectUpdate() {
+		$scope.$parent.submiteUpdateProject($scope.project);
 		ngDialog.close();
 	};
 
 
+	//Item
 	if ($scope.$parent.updateItem === true) {
 		//Item update
 		$scope.popupTitle = "Update item";

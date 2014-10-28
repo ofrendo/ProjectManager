@@ -1,5 +1,5 @@
-app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $http, db, ngDialog) {
-    var _menuTitle = "Personal project manager";
+app.controller("main", ["$scope", "$http", "$timeout", "db", "ngDialog", function($scope, $http, $timeout, db, ngDialog) {
+	//Local storage handling     
     $scope.localStorage = localStorage;
     $scope.setShowChildItems = function(item, value) {
     	localStorage.setItem(item._id.$oid + 'showChildItems', value);
@@ -21,6 +21,8 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
     };
 
 
+    //Init values
+	var _menuTitle = "Personal project manager";
     $scope.menuTitle = _menuTitle;
     $scope.loggedIn = false;
     $scope.numLoaded = "Loading...";
@@ -61,6 +63,10 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
     	}
     };	
 
+    $scope.onSetSelectedItem = function(item, $event) { //Called when clicked on project item
+    	$scope.selectedItem = item;
+    	$event.stopPropagation();
+    }
     $scope.sortableOptions = {
     	update: function(e, ui) {
     		var droptarget = ui.item.sortable.droptarget;
@@ -167,15 +173,37 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 				}
 			}
 
+			//Order items by nextItemID
 			for (var i = 0; i < $scope.projects.length; i++) {
 				orderItems($scope.projects[i]);
 			}
 
-			if ($scope.projects.length > 0) {
+			//set selected item for cursor object
+			$scope.showCursor = false;
+			var found = false;
+			for (var i = 0; i < response.length; i++) {
+				if (response[i]._id.$oid == localStorage.getItem("cursorPosition")) {
+					found = true;
+					setCursorAfterRender(response[i]);
+				}
+			}
+
+			//If nothing has been found
+			if ($scope.projects.length > 0 && found === false) {
 				$scope.selectedItem = $scope.projects[0];
+				$scope.showCursor = true;
 			}
 		});
 	};
+
+	function setCursorAfterRender(item) {
+		(function(selectedItem) {
+			$timeout(function() {
+				$scope.selectedItem = selectedItem;
+				$scope.showCursor = true;
+			}, 100);
+		})(item);
+	}
 
 	function orderItems(parentItem) {
 		if (!parentItem) 
@@ -230,6 +258,16 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 			scope: $scope
 		});
 	};
+	$scope.onUpdateProjectClick = function(project) {
+		resetItems();
+		$scope.updateProject = project;
+		$scope.selectedItem = project;
+		ngDialog.open({
+			template: "templateProject",
+			controller: "popup",
+			scope: $scope
+		});
+	};
 	$scope.onCreateItemSiblingClick = function(project, previousItem, nextItem, selectedItem) {
 		resetItems();
 		//previousItem is previous sibling, can be undefined, first item in array in that case
@@ -278,6 +316,116 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 			scope: $scope
 		});
 	};
+
+	$scope.applyKeyListeners = function() {
+		$("body").on("keydown.pm", function(event) {
+			if ($scope.isDialogOpen !== true) { //What happens on keypress, such as hotkeys for modifying items or navigating with the cursor
+				//$scope.$apply(function() {
+					switch (event.keyCode) {
+					case 38: //Up arrow
+					case 40: //Down arrow: Navigate among items, move cursor
+						//Need to find parent item of selectedItem
+						//That way can get sibling item
+						var moveCursorFunction = (event.keyCode === 38) ? moveCursorUp : moveCursorDown;
+						var item = $scope.selectedItem;
+						if (item.projectID === "root") {
+							moveCursorFunction(item, $scope.projects);
+						}
+						else {
+							var parentItemID = (item.parentItemID  === "root") ? item.projectID : item.parentItemID;
+							var parentItem = findItem($scope.projects, parentItemID);
+							moveCursorFunction(item, parentItem.items);
+						}
+
+						event.preventDefault();
+						break;
+					case 9: //Tab: NOT IMPLEMENTED YET, change tree level
+
+
+						event.preventDefault();
+						break;
+					case 32: //Space: Change viewchilditems
+						$scope.toggleShowChildItems($scope.selectedItem);
+						event.preventDefault(); 
+						break;
+					case 88: //ctrl+x: Edit
+						if (event.ctrlKey === true) {
+							if ($scope.selectedItem.projectID === "root") {
+								clickButton("#cursor ~ button.projectRootEdit");
+							}
+							else {
+								clickButton("#cursor ~ .buttonContainer>button:nth-child(1");
+							}
+							event.preventDefault();
+						}
+						break;
+					case 49: //1: Set status to done
+						clickButton("#cursor ~ .buttonContainer>button:nth-child(2)");
+						event.preventDefault();
+						break;
+					case 50: //2: set status to delayed
+						clickButton("#cursor ~ .buttonContainer>button:nth-child(3)");
+						event.preventDefault();
+						break;
+					case 51: //3: Set status to not done
+						clickButton("#cursor ~ .buttonContainer>button:nth-child(4)");
+						event.preventDefault();
+						break;
+					case 13: //Enter: create item
+						if ($scope.selectedItem.projectID === "root") {
+							clickButton("#cursor ~ button.projectRootButton");
+						}
+						else if (event.shiftKey === true) {//Create previous sibling
+							clickButton("#cursor ~ .buttonContainer>button:nth-child(5)");
+						}
+						else if (event.ctrlKey === true) { //Create child item
+							clickButton("#cursor ~ .buttonContainer>button:nth-child(7)");
+						}
+						else { //Create next sibling
+							clickButton("#cursor ~ .buttonContainer>button:nth-child(6)");
+						}
+						
+						event.preventDefault();							
+						break;
+					case 68: //Ctrl+d: delete
+						if (event.ctrlKey === true) {
+							if ($scope.selectedItem.projectID === "root") {
+								clickButton("#cursor ~ button.projectRootDelete");
+							}
+							else {
+								clickButton("#cursor ~ .buttonContainer>button:nth-child(8)");
+							}
+							event.preventDefault();
+						}
+					} 
+					//console.log(event);
+				//});
+			}
+		});
+		$("body").on("keyup.pm", function(event) {
+			if ($scope.isDialogOpen !== true) { //What happens on keypress, such as hotkeys for modifying items or navigating with the cursor
+				$scope.$apply(function() {
+					
+				});
+				event.preventDefault();
+			}
+		});
+	}
+	$scope.removeKeyListeners = function() {
+		$("body").unbind("keydown.pm").unbind("keyup.pm");
+	}
+	
+	function clickButton(selector) {
+		$timeout(function() {
+			angular.element(selector).trigger("click");
+		}, 0);
+	}
+	
+	//Save cursor position when it moves 
+	$scope.$watch("selectedItem", function(newValue, oldValue) {
+		if (newValue)
+			localStorage.setItem("cursorPosition", newValue._id.$oid);
+	});
 	
 	function resetItems() {
 		delete $scope["selectedProject"];
@@ -316,12 +464,25 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 			}
 		});
 	};
+	$scope.submiteUpdateProject = function(project) {
+		db.updateProject(project, function(response) {
+			var originalProject = findItem($scope.projects, project._id.$oid);
+			originalProject.name = response.name;
+		});
+	};
+	$scope.submitDeleteProject = function(project) {
+		db.deleteProject(project, function(response) {
+			var projectIndex = $scope.projects.indexOf(project);
+			$scope.projects.splice(projectIndex, 1);
+		});
+	};
+
 	$scope.submitCreateItem = function(project, item, itemToBeUpdated) {
 		$scope.prepareItem(item, project._id.$oid);
 		db.createItem(item, function(response) {
 			response.items = [];
 			addItemToProject(project, response);
-
+			setCursorAfterRender(response);
 			if (itemToBeUpdated) {
 				db.updateItemNextItemID(itemToBeUpdated, response._id.$oid, function(updatedItemResponse) {
 					itemToBeUpdated.nextItemID = response._id.$oid;	
@@ -342,9 +503,130 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 			item.status = newStatus;
 		});
 	};
-	$scope.submitDeleteItem = function(item, parentItems) {
-		deleteChildItems(item, parentItems);
+	$scope.submitDeleteItem = function(item, siblingItems, $event) {
+		moveCursorUp(item, siblingItems);
+		deleteChildItems(item, siblingItems);
+
+		//Update previous item's itemNextID
+		var itemIndex = siblingItems.indexOf(item);
+		if (itemIndex !== 0) {
+			var previousItem = siblingItems[itemIndex-1];
+			var nextItem = siblingItems[itemIndex+1];
+			var nextItemID = (nextItem) ? nextItem._id.$oid : null;
+			db.updateItemNextItemID(previousItem, nextItemID, function() {});
+		}
+
+		$event.stopPropagation();
 	};
+
+	function moveCursorDown(item, siblingItems) {
+		var itemIndex = siblingItems.indexOf(item);
+		if (item.items.length > 0 && localStorage.getItem(item._id.$oid + "showChildItems") != "false") { 
+			//If this item has any children: Set first child as selected item
+			$scope.selectedItem = item.items[0];
+		}
+		else if (itemIndex < siblingItems.length-1) { //If this item has a next item, meaning is not the last item
+			$scope.selectedItem = siblingItems[itemIndex+1];
+		}
+		else {
+			navigateCursorDown(item);
+		}
+	}
+
+	function navigateCursorDown(item) {
+		var parentItemID = (item.parentItemID  === "root") ? item.projectID : item.parentItemID;
+		var parentItem = findItem($scope.projects, parentItemID);
+		if (!parentItem) { //Special case when trying to navigate down from project button without children
+			return;
+		}
+
+		if (parentItem.nextItemID !== null && parentItem.projectID !== "root") {
+			$scope.selectedItem = findItem($scope.projects, parentItem.nextItemID);
+		}
+		else {
+			if (parentItem.projectID === "root") {
+				var currentProjectIndex = $scope.projects.indexOf(parentItem);
+				if (currentProjectIndex !== $scope.projects.length-1) { //If not the last item in the last project
+					$scope.selectedItem = $scope.projects[ currentProjectIndex+1 ];
+				}
+			}
+			else { //Need to search for next parentitem, as long as item is not a project
+				navigateCursorDown(parentItem);
+			}
+		}
+
+	}
+
+	function moveCursorUp(item, siblingItems) {
+		//Move cursor to previous item - not in previous sibling but visually above item
+		var itemIndex = siblingItems.indexOf(item);
+		if (item.projectID === "root") { //Project button
+			var projectIndex = $scope.projects.indexOf(item);
+			if (projectIndex > 0) { //If not the first project, move cursor to project above
+				var previousProject = $scope.projects[ projectIndex-1 ];
+				if (previousProject.items.length > 0) { //Check if project has any items
+					navigateCursorUp( previousProject.items[ previousProject.items.length-1 ]);
+				}
+				else {
+					$scope.selectedItem = previousProject;
+				}
+			}
+		}
+		else if (itemIndex === 0 && item.parentItemID === "root") { //Very first item in a project
+			setItemByID($scope.projects, item.projectID); //setItemByID(project, project._id.$oid);
+		}
+		else if (itemIndex === 0) { //First check if this is the first item in the array, in which case new selected item is the parent
+			setItemByID($scope.projects, item.parentItemID);
+		}
+		else { //Else find the item above this one
+			//var previousItems = parentItem.items.slice(0, itemIndex);
+			navigateCursorUp( siblingItems[itemIndex-1] );
+		}
+	}
+
+	function navigateCursorUp(item) { //navigates the cursor to a visually previous item
+		if (item.items.length === 0 || localStorage.getItem(item._id.$oid + "showChildItems") == "false") {
+			$scope.selectedItem = item;
+		}
+
+		if (localStorage.getItem(item._id.$oid + "showChildItems") == "false") 
+			return;
+
+		item.items.loopInDirection("up", function(index, childItem) {
+			navigateCursorUp(childItem);
+		});
+	}
+
+	Array.prototype.loopInDirection = function(direction, callback) {
+		if (direction == "up") {
+			for (var i = this.length-1; i >= 0; i--) {
+				callback(i, this[i]);
+			}
+		}
+		else {
+			for (var i = 0; i < this.length; i++) {
+				callback(i, this[i]);
+			}
+		}
+	}
+
+	//Sets the selectedItem by ID
+	function setItemByID(parentItems, itemID) {
+		$scope.selectedItem = findItem(parentItems, itemID);
+	}
+
+	//Searches through the items array recursively for a given itemID
+	function findItem(items, itemID) { 
+		var result;
+		for (var i = 0; !result && i < items.length; i++) {
+			if (items[i]._id.$oid == itemID) {
+				return items[i];
+			}
+			
+			result = findItem(items[i].items, itemID);
+		}
+		return result;
+	}
 
 	//Delete an item and its children recursively
 	function deleteChildItems(item, parentItems) {
@@ -386,6 +668,8 @@ app.controller("main", ["$scope", "$http", "db", "ngDialog", function($scope, $h
 	if ($scope.remember === true) {
 		$scope.submitLogin($scope.user);
 	}
+	$scope.applyKeyListeners();
+
 
 	//add item to project recursively, CAN ONLY BE USED AFTER PROJECT ALREADY LOADED
 	function addItemToProject(parentItem, item) {

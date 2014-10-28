@@ -24,6 +24,9 @@ ul.listProjectItems {
 	border-radius: 2px;
 	display: inline-block;
 }
+.projectItem:hover, #cursor ~ .projectItem {
+	background-color: #f2f2f2;
+}
 .projectItemLi {
 	/*margin: 1px 0;*/
 }
@@ -74,9 +77,6 @@ ul.listProjectItems {
 
 
 /* List dragging css */
-.projectItem:hover {
-	background-color: #f2f2f2;
-}
 .projectItem:active {
 	background-color: #d9d9d9;
 	cursor: all-scroll;

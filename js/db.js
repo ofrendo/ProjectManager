@@ -68,9 +68,31 @@ app.factory("db", ["$http", function($http) {
 			callback(response);
 		});
 	};
+	module.updateProject = function(project, callback) {
+		var cloneProject = buildCloneItem(project);
+		var url = buildItemURL(project);
+		$http.put(url, cloneProject)
+		.success(function(response) {
+			console.log("Response updateProject:");
+			console.log(response);
+			callback(response);
+		});
+	};
+	module.deleteProject = function(project, callback) {
+		//Need to delete all child items of this project as well as the project itself
+		var projectID = {"projectID": project._id.$oid};
+		var url = urls.projects + "&q=" + JSON.stringify(projectID);
+		console.log("Deleting project: ");
+		console.log(url);
+		$.ajax({
+			url: url,
+			data: "[]",
+			type: "PUT",
+			contentType: "application/json",
+			success: function() { module.deleteItem(project, callback); } 
+		});
+	};
 	module.createItem = function(item, callback) {
-		console.log("Creating item:");
-		console.log(item);
 		$http.post(urls.projects, item)
 		.success(function(response) {
 			console.log("Response createItem:");
@@ -101,7 +123,6 @@ app.factory("db", ["$http", function($http) {
 		});
 	};
 	module.deleteItem = function(item, callback) {
-		//NEED TO DELETE ALL CHILD ELEMENTS AS WELL
 		var url = buildItemURL(item);
 		$http.delete(url)
 		.success(function(response) {
