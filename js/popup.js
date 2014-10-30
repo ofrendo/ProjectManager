@@ -93,7 +93,7 @@ app.controller("popup", ["$scope", "ngDialog", function($scope, ngDialog) {
 		$scope.popupTitle = "Create item";
 		$scope.submitButtonTitle = "Create";
 		$scope.item = {
-			description: "Description for item"
+			description: ""
 		};
 		$scope.itemSubmitFunction = onCreateItemSubmit;
 
