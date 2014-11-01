@@ -22,7 +22,7 @@
 			<a class="pure-menu-heading" href="#">{{menuTitle}}</a>
 			<ul>
 				<li ng-show="loggedIn" ng-click="onCreateProjectClick()"><a href="#">Create project</a></li>
-				<li ng-repeat="status in itemStatuses">
+				<li ng-model="status" ng-repeat="status in itemStatuses">
 					<label for="{{status.id}}" class="pure-checkbox">
 			            <input ng-model="status.show" ng-true-value="true" ng-false-value="false"  id="{{status.id}}" type="checkbox">Show '{{status.text}}' items
 			        </label>
