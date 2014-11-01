@@ -35,7 +35,8 @@ app.controller("main", ["$scope", "$http", "$timeout", "db", "ngDialog", functio
     		tooltip: "Mark 'Done'",
     		textDecoration: "line-through",
     		lsID: "showDoneItems", //localstorage ID
-    		show: localStorage.getItem("showDoneItems") === "true" ? true : false
+    		show: (localStorage.getItem("showDoneItems") === "true" || localStorage.getItem("showNotDoneItems") === null)
+    			   ? true : false
     	},
     	{
     		id: "delayed",
@@ -44,7 +45,8 @@ app.controller("main", ["$scope", "$http", "$timeout", "db", "ngDialog", functio
     		tooltip: "Mark 'Delayed'",
     		textDecoration: "underline",
     		lsID: "showDelayedItems", 
-    		show: localStorage.getItem("showDelayedItems") === "true" ? true : false
+    		show: (localStorage.getItem("showDelayedItems") === "true" || localStorage.getItem("showNotDoneItems") === null)
+    			   ? true : false
     	},
     	{
     		id: "notDone",
@@ -53,7 +55,8 @@ app.controller("main", ["$scope", "$http", "$timeout", "db", "ngDialog", functio
     		tooltip: "Mark 'Not done'",
     		textDecoration: "initial",
     		lsID: "showNotDoneItems", 
-    		show: localStorage.getItem("showNotDoneItems") === "true" ? true : false
+    		show: (localStorage.getItem("showNotDoneItems") === "true" || localStorage.getItem("showNotDoneItems") === null)
+    			   ? true : false
     	}
     ];
     $scope.itemInitialStatus = $scope.itemStatuses[2].text;
