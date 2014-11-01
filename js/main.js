@@ -20,7 +20,6 @@ app.controller("main", ["$scope", "$http", "$timeout", "db", "ngDialog", functio
     		$scope.setShowChildItems(item, true);
     };
 
-
     //Init values
 	var _menuTitle = "Personal project manager";
     $scope.menuTitle = _menuTitle;
@@ -30,25 +29,39 @@ app.controller("main", ["$scope", "$http", "$timeout", "db", "ngDialog", functio
     $scope.projects = [];
     $scope.itemStatuses = [ 
     	{ 
+    		id: "done",
     		text: "Done",
     		iconPath: "fa-check",
     		tooltip: "Mark 'Done'",
-    		textDecoration: "line-through"
+    		textDecoration: "line-through",
+    		lsID: "showDoneItems", //localstorage ID
+    		show: localStorage.getItem("showDoneItems") === "true" ? true : false
     	},
     	{
+    		id: "delayed",
     		text: "Delayed", 
     		iconPath: "fa-clock-o", 
     		tooltip: "Mark 'Delayed'",
-    		textDecoration: "underline"
+    		textDecoration: "underline",
+    		lsID: "showDelayedItems", 
+    		show: localStorage.getItem("showDelayedItems") === "true" ? true : false
     	},
     	{
+    		id: "notDone",
     		text: "Not done",
     		iconPath: "fa-times",
     		tooltip: "Mark 'Not done'",
-    		textDecoration: "initial"
+    		textDecoration: "initial",
+    		lsID: "showNotDoneItems", 
+    		show: localStorage.getItem("showNotDoneItems") === "true" ? true : false
     	}
     ];
     $scope.itemInitialStatus = $scope.itemStatuses[2].text;
+    $scope.$watch("itemStatuses", function(newStatus, oldStatus) {
+    	localStorage.setItem(newStatus.lsID, newStatus.show)
+    });
+
+
     $scope.tooltips = {
     	edit: "Edit",
     	createPrevious: "Create previous sibling",
