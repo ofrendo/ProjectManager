@@ -35,7 +35,7 @@ app.controller("main", ["$scope", "$http", "$timeout", "db", "ngDialog", functio
     		tooltip: "Mark 'Done'",
     		textDecoration: "line-through",
     		lsID: "showDoneItems", //localstorage ID
-    		show: (localStorage.getItem("showDoneItems") === "true" || localStorage.getItem("showNotDoneItems") === null)
+    		show: (localStorage.getItem("showDoneItems") === "true" || localStorage.getItem("showDoneItems") === null)
     			   ? true : false
     	},
     	{
@@ -45,7 +45,7 @@ app.controller("main", ["$scope", "$http", "$timeout", "db", "ngDialog", functio
     		tooltip: "Mark 'Delayed'",
     		textDecoration: "underline",
     		lsID: "showDelayedItems", 
-    		show: (localStorage.getItem("showDelayedItems") === "true" || localStorage.getItem("showNotDoneItems") === null)
+    		show: (localStorage.getItem("showDelayedItems") === "true" || localStorage.getItem("showDelayedItems") === null)
     			   ? true : false
     	},
     	{
@@ -60,12 +60,6 @@ app.controller("main", ["$scope", "$http", "$timeout", "db", "ngDialog", functio
     	}
     ];
     $scope.itemInitialStatus = $scope.itemStatuses[2].text;
-    $scope.$watchCollection("itemStatuses", function(newStatuses, oldStatuses) { //DOESNT WORK ATM 2.11
-    	for (var i = 0; i < newStatuses.length; i++) {
-    		localStorage.setItem(newStatus[i].lsID, newStatus[i].show)
-    	}
-    }, true);
-
 
     $scope.tooltips = {
     	edit: "Edit",
@@ -80,6 +74,15 @@ app.controller("main", ["$scope", "$http", "$timeout", "db", "ngDialog", functio
     			return $scope.itemStatuses[i].textDecoration;
     	}
     };	
+    $scope.isItemShown = function(item) {
+		for (var i = 0; i < $scope.itemStatuses.length; i++) {
+			if ($scope.itemStatuses[i].text == item.status) {
+				if ($scope.itemStatuses[i].show == false) 
+					return false;
+			}
+		}	
+		return true;
+	};
 
     $scope.onSetSelectedItem = function(item, $event) { //Called when clicked on project item
     	$scope.selectedItem = item;
@@ -236,7 +239,7 @@ app.controller("main", ["$scope", "$http", "$timeout", "db", "ngDialog", functio
 			if (parentItem.items[i].nextItemID == null) {
 				lastItem = parentItem.items[i];
 				break;
-			}
+			}	
 		}
 		//Order them according to nextItemID
 		var orderedItems = [ lastItem ];
@@ -259,7 +262,9 @@ app.controller("main", ["$scope", "$http", "$timeout", "db", "ngDialog", functio
 			orderItems(orderedItems[i]);
 		}
 	}
-
+	$scope.onFilterClick = function(status) {
+		localStorage.setItem(status.lsID, status.show);
+	};
 	$scope.onLogoutClick = function() {
 		$scope.user = {};		
 		$scope.menuTitle = _menuTitle;
