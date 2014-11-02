@@ -60,11 +60,11 @@ app.controller("main", ["$scope", "$http", "$timeout", "db", "ngDialog", functio
     	}
     ];
     $scope.itemInitialStatus = $scope.itemStatuses[2].text;
-    $scope.$watch("itemStatuses", function(newStatuses, oldStatuses) {
+    $scope.$watch("itemStatuses", function(newStatuses, oldStatuses) { //DOESNT WORK ATM 2.11
     	for (var i = 0; i < newStatuses.length; i++) {
     		localStorage.setItem(newStatus[i].lsID, newStatus[i].show)
     	}
-    });
+    }, true);
 
 
     $scope.tooltips = {
