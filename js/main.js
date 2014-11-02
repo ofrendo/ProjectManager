@@ -61,7 +61,7 @@ app.controller("main", ["$scope", "$http", "$timeout", "db", "ngDialog", functio
     ];
     $scope.itemInitialStatus = $scope.itemStatuses[2].text;
     $scope.$watch("itemStatuses", function(newStatus, oldStatus) {
-    	localStorage.setItem(newStatus.lsID, !newStatus.show)
+    	//localStorage.setItem(newStatus.lsID, !newStatus.show)
     });
 
 
